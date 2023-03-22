@@ -5,6 +5,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <div>
-        <h1>Hello world</h1>
+        
+
+        {% if isDirectGoogle == False %}
+            <!-- Must be able to retrieve the callback code after User consent -->
+            <a href="{{url_google}}">Authenticate on google</a>
+            <h1>Click on the link up below to authenticate on Google</h1>
+        {% else %}
+            <h1>Authenticated with google API !</h1>
+            <h2>datas - {{ user_info }}: {{ datas_google }}</h2>
+        {% endif %}
     </div>
 </html>
