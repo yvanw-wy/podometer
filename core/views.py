@@ -95,14 +95,15 @@ def index (req):
 # Return user informations
 def getUserGoogle (req):
     token = req.GET.get('token', '')
-    [code, user_email, user_id] = getUserInfos(token)
-    resp = JsonResponse([code, user_email, user_id], safe=False)
+    [code, user_email, name, user_id] = getUserInfos(token)
+    resp = JsonResponse([code, user_email, name, user_id], safe=False)
     return resp
 
 # Return user datas
 def getDatasGoogle (req):
     token = req.GET.get('token', '')
     id = req.GET.get('id', '')
-    datas = getStepsGoogle(token, id, database)
+    name = req.GET.get('name', '')
+    datas = getStepsGoogle(token, name, database)
     resp = JsonResponse(datas, safe=False)
     return resp
