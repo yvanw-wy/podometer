@@ -11,10 +11,11 @@ interface propsGoogleFit {
     setDatasGoogle: any,
     setUserInfo: any,
     setAccessToken: any,
-    accessToken: any
+    accessToken: any,
+    setDatasHeatMap: any
 }
 const GoogleFit = (props: propsGoogleFit) => {
-    const { setDatasGoogle, setUserInfo, setAccessToken, accessToken } = props;
+    const { setDatasGoogle, setUserInfo, setAccessToken, accessToken, setDatasHeatMap } = props;
 
     const [request, fullResult, promptAsync] = Google.useAuthRequest({
       selectAccount: true,
@@ -60,7 +61,6 @@ const GoogleFit = (props: propsGoogleFit) => {
             let token;
             let refreshToken;
             if (fullResult?.type === 'success') {
-                console.log(fullResult);
                 token = fullResult.authentication?.accessToken;
                 refreshToken = fullResult.authentication?.refreshToken
                 setAccessToken(token);
@@ -102,12 +102,12 @@ const GoogleFit = (props: propsGoogleFit) => {
                 url: 'googlefit/getdatas',
                 datas: {
                     token: token,
-                    id: user_google[2].id
+                    id: user_google[3].id,
+                    name: user_google[2].name
                 }
             })
-
-            console.log(datas_gootle);
             setDatasGoogle(datas_gootle);  
+            setDatasHeatMap(datas_gootle);
         }
       }
       catch (e) {
