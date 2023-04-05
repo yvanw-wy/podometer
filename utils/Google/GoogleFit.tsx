@@ -91,6 +91,7 @@ const GoogleFit = (props: propsGoogleFit) => {
                 token: token,
             }
         })
+        console.log(user_google)
         if(!user_google[0].success){
             await _deleteDatas('accessToken');
             setAccessToken({});
@@ -102,8 +103,7 @@ const GoogleFit = (props: propsGoogleFit) => {
                 url: 'googlefit/getdatas',
                 datas: {
                     token: token,
-                    id: user_google[3].id,
-                    name: user_google[2].name
+                    id: user_google[1].id
                 }
             })
             setDatasGoogle(datas_gootle);  

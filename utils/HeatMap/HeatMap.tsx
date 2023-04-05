@@ -55,7 +55,20 @@ const HeatMap = (props: propsHeatMap) => {
     color: '#F51D27-#FA541C-#FF8C12-#FFC838-#FAFFA8-#80FF73-#12CCCC-#1890FF-#6E32C2' as any,
     legend: {
       position: 'bottom',
-    } as any
+    } as any,
+    meta: {
+        hour: {
+            formatter: (value : any, index : any) => value + "h",
+            min: 0,
+            max: 24,
+            maxLimit: 24
+        } as any,
+        day: {
+            formatter: (value : any, index : any) => value + "j",
+            min: 1,
+            max: 30
+        } as any
+    }
   };
 
   return (

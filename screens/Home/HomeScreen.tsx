@@ -28,7 +28,7 @@ const HomeScreen = () => {
                   {
                     Object.keys(data.datas).length ? 
                       <View>
-                        <Text style={{ textAlign: 'center', fontSize: '1.5rem' }}>Datas - {data.user_email}</Text>
+                        <Text style={{ textAlign: 'center', fontSize: '1.5rem' }}>Datas - {data.user_name} - alerter ? {data.features.should_alert ? "Oui" : "Non"}</Text>
                         <HeatMap datas_mean={data.datas_mean} datas_month_grouper={data.datas_month_grouper} />
                         <Divider />
                       </View>
@@ -48,7 +48,7 @@ const HomeScreen = () => {
   )
 }
 
-// Git push
+// Install Jupyter
 // Workflow on IoS
 // Comparison between each heat map
 
