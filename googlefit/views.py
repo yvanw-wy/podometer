@@ -2,14 +2,19 @@ from django.shortcuts import render
 from googleapiclient.discovery import build
 import requests
 from datetime import datetime
+import time
 import numpy as np
 import pandas as pd
 import json
-from tabulate import tabulate
+import sys
+import os
+fpath = os.path.join(os.path.dirname(__file__), 'utils')
+sys.path.append(fpath)
+import analysis
 
 
 #Function used to get user infos 
-def getUserInfos(token):
+def getUserInfos(database, token):
     # Informations has been found, so we can proceed to get the email account by which the datas belongs to
     user_email = ''
     name = ''
@@ -27,17 +32,30 @@ def getUserInfos(token):
         response = resp_account.json()
         user_email = response['email']
         user_id = response['sub']
-        name = (response['given_name'] + '-' + response['family_name']).lower()
+        name = (response['given_name'] + ' ' + response['family_name']).lower()
+        # Check if this user exists already in the db: If not so, create a new one:
+        user = database.child("users").child(user_id).get().val()
+        if user is None:
+            # Save user datas in the db of users
+            database.child("users").child(user_id).set({
+                'user_email': user_email,
+                'name': name,
+                'created_at': time.time()
+            })
+            database.child("threshold").child(user_id).set({
+                'lower_bound': -1325.0327543564667,
+                'upper_bound': 1325.0327543564667,
+                'mean': 9211.479326676907,
+                'is_checked': True
+            })
     return [
-        { 'success': success }, 
-        { 'email': user_email },
-        { 'name': name }, 
+        { 'success': success },
         { 'id': user_id }
     ]
     
 
 #Function used to get step datas
-def getStepsGoogle(token, name, database):
+def getStepsGoogle(token, id, database):
     output = []
     output_mean = []
     output_days = []
@@ -62,47 +80,54 @@ def getStepsGoogle(token, name, database):
         }
     )
     datas = resp.json()['bucket']
-    database.child("bucket").child(name).set(datas)
-    all_datas = database.child("bucket").get().val()
+    database.child("bucket").child(id).set(datas)  # Setting the new datas to the db
+    steps_datas = database.child("bucket").get().val() # Getting all datas from the user
+
 
     # Formatting google fit datas
-    for user, buckets in all_datas.items():
+    for user, buckets in steps_datas.items():
         if type(buckets) != str:
+
+            # Query first of all user informations referring to that id
+            user_infos = database.child("users").child(user).get().val() # Getting all user infos
+            confidence_interval = database.child("threshold").child(user).get().val() # Getting it's threshold informations
+            
+            #Transforming datas to dataframes
             df = pd.DataFrame(buckets)
             
-            # Data extraction
-            df2 = df.explode('dataset') # Explode dataset first and get the json representation
-            json_struct = json.loads(df2.to_json(orient="records")) # Since datasets is in json, normalize the keys into colums
-            df_flat = pd.json_normalize(json_struct)
-            
-            df_flat2 = df_flat.explode('dataset.point') # Then explode points (If any), and it will still return a json object
-            json_struct_2 = json.loads(df_flat2.to_json(orient="records")) # And then normalize it
-            df_flat3 = pd.json_normalize(json_struct_2)
-            
-            df_flat4 = df_flat3.explode('dataset.point.value') # Then explode points datas
-            json_struct3 = json.loads(df_flat4.to_json(orient="records")) # Then normalize points
-            df_flat5 = pd.json_normalize(json_struct3)
-            
-            df_flat5.drop(['endTimeMillis', 'dataset.point.value', 'dataset.point.dataTypeName', 'dataset.point.originDataSourceId', 'dataset.point.startTimeNanos', 'dataset.point.endTimeNanos', 'dataset.dataSourceId', 'dataset.point'], axis=1, inplace=True) # Drops the unwanted columns
-            
-            df_flat5['startTimeMillis'] = pd.to_datetime(df_flat5['startTimeMillis'], unit='ms') # Convert time to milliseconds
+            # Preprocessing
+            df = analysis.preprocess_datas(df)
 
-            df_flat5['dataset.point.value.intVal'] = df_flat5['dataset.point.value.intVal'].fillna(0) # Replace NaN with 0 in values
-            col = df_flat5.pop("startTimeMillis") # Then invert cells
-            df_flat5.insert(0, col.name, col)
+            # Function for handling missing datas
+            df = analysis.missing_datas(df)
 
-            df_flat5['day'] = df_flat5['startTimeMillis'].dt.day # Create a new column named "Day"
-            df_flat5['hour'] = df_flat5['startTimeMillis'].dt.hour # Create a new column named "Hour"
+            # Alert unusual activities (If any)
+            should_alert = analysis.check_alert(df, confidence_interval, database, user) 
 
-            df_mean = df_flat5.copy() # Create the dataframe which will hold the median values of the series
-            df_mean2 = df_mean.groupby(['day', 'hour'], as_index=False)['dataset.point.value.intVal'].mean()
-
-            df_month_grouper = df_flat5.copy() # Create the dataframe which will hold the values of the series aggregated per month-year
-            df_month_grouper1 = df_month_grouper.groupby(pd.Grouper(key='startTimeMillis', freq='M'))
-            df_month_grouper2 = [group.to_dict() for _,group in df_month_grouper1]
+            # Function useful to rearrange the dataframe format for data viz in the front-end
+            [df_month_grouper, df_mean2] = analysis.data_viz_front(df)
             
-            output.append({ 'user_email': user, 'datas_month_grouper': df_month_grouper2, 'datas_mean': df_mean2.to_dict(), 'datas': df_flat5.to_dict() }) # Then send datas finally
+            output.append({ 
+                'user_name': user_infos['name'], 
+                'user_id': user, 
+                'datas_month_grouper': df_month_grouper, 
+                'datas_mean': df_mean2.to_dict(), 
+                'datas': df.to_dict(), 
+                'features': {
+                    'should_alert': should_alert
+                }
+            }) # Then send datas finally
+            
         else: 
-            output.append({ 'user_email': user, 'datas_month_grouper': {}, 'datas_mean': {}, 'datas': {} })
+            output.append({ 
+                'user_name': '', 
+                'user_id': 0, 
+                'datas_month_grouper': {}, 
+                'datas_mean': {}, 
+                'datas': {},
+                'features': {
+                    'should_alert': False
+                } 
+            })
 
     return output

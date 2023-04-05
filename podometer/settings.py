@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'core',
     'fitbit',
     'rest_framework',
-    'googlefit'
+    'googlefit',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -58,7 +59,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = []
 
-ALLOWED_HOSTS = ['10.31.81.17', '*']
+ALLOWED_HOSTS = ['10.31.82.80', '*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -136,3 +137,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRONTAB_COMMAND_SUFFIX = '2>&1'
+CRONJOBS = [
+    ('* * * * *', 'django.core.management.call_command', ['alert-activities-check'], '>> /var/log/cron1.log') # 0 0 1 * *
+]
