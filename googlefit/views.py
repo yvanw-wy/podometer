@@ -79,9 +79,13 @@ def getStepsGoogle(token, id, database):
             "Content-Type": "application/json"
         }
     )
-    datas = resp.json()['bucket']
-    database.child("bucket").child(id).set(datas)  # Setting the new datas to the db
-    steps_datas = database.child("bucket").get().val() # Getting all datas from the user
+    steps_datas = []
+    if 'error' in resp.text:
+        steps_datas = database.child("bucket").get().val() # Getting just all datas from the user
+    else:
+        datas = resp.json()['bucket']
+        database.child("bucket").child(id).set(datas)  # Setting the new datas to the db
+        steps_datas = database.child("bucket").get().val() # Getting all datas from the user
 
 
     # Formatting google fit datas
@@ -104,6 +108,9 @@ def getStepsGoogle(token, id, database):
             # Alert unusual activities (If any)
             should_alert = analysis.check_alert(df, confidence_interval, database, user) 
 
+            # Classifiy actual activity
+            activity_type = analysis.classify_activity(df)
+
             # Function useful to rearrange the dataframe format for data viz in the front-end
             [df_month_grouper, df_mean2] = analysis.data_viz_front(df)
             
@@ -114,7 +121,8 @@ def getStepsGoogle(token, id, database):
                 'datas_mean': df_mean2.to_dict(), 
                 'datas': df.to_dict(), 
                 'features': {
-                    'should_alert': should_alert
+                    'should_alert': should_alert,
+                    'type_activity': activity_type
                 }
             }) # Then send datas finally
             
@@ -126,7 +134,8 @@ def getStepsGoogle(token, id, database):
                 'datas_mean': {}, 
                 'datas': {},
                 'features': {
-                    'should_alert': False
+                    'should_alert': False,
+                    'type_activity': 'NONE'
                 } 
             })
 

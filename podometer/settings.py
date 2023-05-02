@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'googlefit',
     'django_crontab',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -59,7 +62,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = []
 
-ALLOWED_HOSTS = ['10.31.82.80', '*']
+ALLOWED_HOSTS = ['172.28.80.1', '*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -138,7 +141,19 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CRONTAB_COMMAND_SUFFIX = '2>&1'
-CRONJOBS = [
-    ('* * * * *', 'django.core.management.call_command', ['alert-activities-check'], '>> /var/log/cron1.log') # 0 0 1 * *
-]
+# Celery settings
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALISER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# CELERY BEAT
+CELERY_BEAT_SCHEDULE = {
+    'scheduled_task': {
+        'task': 'alert_activity',
+        'schedule': crontab(0, 0, day_of_month='1')
+    }
+}

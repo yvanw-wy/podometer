@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
 import json
-from datetime import datetime
+from datetime import datetime, date
 import os
 import math
+import pickle
 
+array_activities = ['AU_REPOS', 'ACTIVITE_INTENSE', 'MARCHE_PASSIVE']
 
 def preprocess_datas(df):
     df2 = df.explode('dataset') # Explode dataset first and get the json representation
@@ -32,6 +34,38 @@ def preprocess_datas(df):
 def missing_datas(df):
     return df
 
+counter = 0
+def inactivity_user(row):
+    global counter
+    if row['dataset.point.value.intVal'] == 0:
+        if row['hour'] == 0:
+            counter = 0 # Reinitialize track
+        else:
+            counter += 1 # Keep track of the inactivity
+    return counter
+
+def classify_activity(df):
+    df_user = df.copy()
+    df_user['hour'] = df_user['startTimeMillis'].dt.hour # Create a new column named "Hour"
+    df_user["startTimeMillis"] = pd.to_datetime(df_user["startTimeMillis"]).dt.date
+    df_user = df_user[df_user['startTimeMillis'] == date.today()]
+    df_user['inactivity'] = df_user.apply(inactivity_user, axis=1) # Create a new column named "Inactivity" to capture the inactivity tracking in hours
+    if df_user.size == 0:
+        return "NO_DATA"
+    else:
+        today_activity = df_user.iloc[-1]
+        value = today_activity['dataset.point.value.intVal']
+        inactivity = today_activity['inactivity']
+        actual_data = pd.DataFrame({ 'dataset.point.value.intVal': value, 'inactivity': inactivity }, index=[0])
+
+        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./model/classified_activities.pickle")
+        with open(model_path, 'rb') as f:
+            knn = pickle.load(f)
+        y_pred = knn.predict(actual_data)
+        output = array_activities[y_pred[0]]
+        print(output)
+        return output
+
 
 
 def data_viz_front(df):
@@ -51,7 +85,8 @@ def check_alert(df, confidence_datas, database, id):
     success = False
     if confidence_datas['is_checked'] == False:
         df_single_month = df.copy() # Create the dataframe which will hold the median values of the df
-        df_single_month = df_single_month[df_single_month['startTimeMillis'].dt.month == datetime.now().month] # Filter records by the actual month
+        month_compare = datetime.now().month
+        df_single_month = df_single_month[df_single_month['startTimeMillis'].dt.month == month_compare] # Filter records by the actual month
         df_single_month = df_single_month.groupby(pd.Grouper(key='startTimeMillis', freq='D')).sum()
         df_single_month = df_single_month.iloc[:-1] 
         if df_single_month.size != 0:
@@ -66,6 +101,7 @@ def set_confidence_thresholds(df):
     df_single_month = df.copy() # Create the copy of the dataframe for getting the last 6 months
     df_single_month = df_single_month.groupby(pd.Grouper(key='startTimeMillis', freq='M')).mean()
     df_single_month = df_single_month.sort_values(by='startTimeMillis', ascending=False)
+    df_single_month = df_single_month.iloc[:-1]
     df_single_month = df_single_month.head(6)
     data_archive_firebase = []
     data_archive_firebase.extend(df_single_month['dataset.point.value.intVal'].tolist())    
