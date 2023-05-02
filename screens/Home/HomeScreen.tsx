@@ -29,6 +29,7 @@ const HomeScreen = () => {
                     Object.keys(data.datas).length ? 
                       <View>
                         <Text style={{ textAlign: 'center', fontSize: '1.5rem' }}>Datas - {data.user_name} - alerter ? {data.features.should_alert ? "Oui" : "Non"}</Text>
+                        <Text style={{ textAlign: 'center', fontSize: '1.2rem' }}>Type d'activités: {data.features.type_activity}</Text>
                         <HeatMap datas_mean={data.datas_mean} datas_month_grouper={data.datas_month_grouper} />
                         <Divider />
                       </View>

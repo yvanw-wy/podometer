@@ -52,7 +52,7 @@ const HeatMap = (props: propsHeatMap) => {
     xField: 'hour' as any,
     yField: 'day' as any,
     colorField: 'value' as any,
-    color: '#F51D27-#FA541C-#FF8C12-#FFC838-#FAFFA8-#80FF73-#12CCCC-#1890FF-#6E32C2' as any,
+    color: '#F9FAFC-#E4EBF4-#FF8C12-#C6D9F0-#9B9EA5-#EE7264-#12CCCC-#1890FF-#6E32C2' as any,
     legend: {
       position: 'bottom',
     } as any,

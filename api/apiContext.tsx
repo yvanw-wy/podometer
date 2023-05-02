@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 
-const baseURL = 'http://10.31.82.80:8000/'; // 'http://10.31.81.17:8000/'
+const baseURL = 'http://172.28.80.1:8000/'; // 'http://10.31.81.17:8000/'
 
 type dispatchProps = {
     type_request: string;
