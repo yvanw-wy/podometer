@@ -3,6 +3,7 @@ version: '3.8'
 services:
   django: 
     container_name: django
+    restart: always
     build:
       context: .
     command: python3 manage.py runserver 0.0.0.0:8000
@@ -17,7 +18,13 @@ services:
       - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
+      - postgres
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.4
+      
   celery:
+    restart: always
     build:
       context: .
     command: celery --app podometer worker -l info
@@ -26,7 +33,12 @@ services:
     depends_on:
       - django
       - redis
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.5
+  
   beat:
+    restart: always
     build:
       context: .
     command: celery --app podometer beat -l INFO
@@ -35,5 +47,57 @@ services:
     depends_on:
       - django
       - redis
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.6
+  
   redis:
     image: "redis:alpine"
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.7
+  
+  postgres:
+    image: postgres
+    restart: always
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: doctors
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.2
+  
+  pgadmin:
+    container_name: pgadmin4
+    restart: always
+    image: dpage/pgadmin4
+    volumes:
+      - ./data/pgadmin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: root@root.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    networks:
+      app_net:
+        ipv4_address: 192.168.0.3
+
+networks:
+  app_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "192.168.0.0/24"
+          gateway: 192.168.0.1
+
+
+
+
+
+    

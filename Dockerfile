@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 # Install cron and all the basic librairies
-RUN apt-get update && apt-get -y install cron && apt-get -y install pip
+RUN apt-get update && apt-get -y install cron && apt-get -y install pip && apt-get -y install libpq-dev
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 

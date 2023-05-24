@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from core.views import index, getUserGoogle, getDatasGoogle
+from core.views import index, getDatasGoogle, registerUserGoogle
 
 urlpatterns = [
     path('', index, name='index'),
-    path('googlefit/getuser', getUserGoogle, name='usergoogle'),
+    path('googlefit/registeruser', registerUserGoogle, name='registeruser'),
     path('googlefit/getdatas', getDatasGoogle, name='datasgoogle'),
     path('admin/', admin.site.urls),
 ]
