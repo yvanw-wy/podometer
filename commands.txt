@@ -22,4 +22,5 @@ alter postgres 'rolename' with encrypted password 'password'
 # Create a new database
 CREATE DATABASE 'database'
 
+# Migrate
 python3 manage.py migrate
