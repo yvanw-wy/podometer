@@ -1,21 +1,21 @@
-import { StyleSheet, Text, View, Platform, Button } from 'react-native'
+import { StyleSheet, Text, View, Platform, Button, TouchableOpacity } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import * as Google from 'expo-auth-session/providers/google'
 import React, { useEffect, useState, useCallback } from 'react'
 import { _deleteDatas, _retrieveDatas, _storeDatas } from '../LocalStorage/LocalStorage';
 import dispatchAPI from '../../api/apiContext';
+import colors from '../../assets/styles/colors';
+import fonts from '../../assets/styles/fonts';
+import spacing from '../../assets/styles/spacing';
+import PlusIcon from '../../assets/svgs/PlusIcon';
 
 WebBrowser.maybeCompleteAuthSession();
 
 interface propsGoogleFit {
-    setDatasGoogle: any,
-    setUserInfo: any,
-    setAccessToken: any,
-    accessToken: any,
-    setDatasHeatMap: any
+    setDatasGoogle: any
 }
 const GoogleFit = (props: propsGoogleFit) => {
-    const { setDatasGoogle, setUserInfo, setAccessToken, accessToken, setDatasHeatMap } = props;
+    const { setDatasGoogle } = props;
 
     const [request, fullResult, promptAsync] = Google.useAuthRequest({
       selectAccount: true,
@@ -44,84 +44,72 @@ const GoogleFit = (props: propsGoogleFit) => {
 
     useEffect(() => {
         // Read cookies to check if there is an access token, and if so, return it
-        const fetchToken = async () => {
-            const token = await _retrieveDatas('accessToken');
-            if(token){
-                setAccessToken(token);
-                getDatas(token)
-            }
-        }
-        fetchToken();
+        const getDatas = async () => {
+          try {
+            const datas_google = await dispatchAPI({
+                type_request: 'GET', 
+                url: 'googlefit/getdatas',
+                datas: {
+                  
+                }
+            })
+            setDatasGoogle(datas_google);
+          }
+          catch (e) {
+          }
+        };
+        getDatas();
     }, []);
 
     useEffect(() => {
 
       const evalToken = async () => {
-        if(!Object.keys(accessToken).length){
-            let token;
-            let refreshToken;
-            if (fullResult?.type === 'success') {
-                token = fullResult.authentication?.accessToken;
-                refreshToken = fullResult.authentication?.refreshToken
-                setAccessToken(token);
-                getDatas(token);
-                // Store access token in localStorage
-                const storeToken = await _storeDatas(token, 'accessToken');
-                const storeRefreshToken = await _storeDatas(refreshToken, 'refreshToken');
+        let token;
+        let refreshToken;
+        if (fullResult?.type === 'success') {
+          token = fullResult.authentication?.accessToken;
+          refreshToken = fullResult.authentication?.refreshToken
+          
+          // Store these tokens in the db, and store this new user in the db
+          const saveUser = await dispatchAPI({
+            type_request: 'GET', 
+            url: 'googlefit/registeruser',
+            datas: {
+              token: token,
+              refreshToken: refreshToken
             }
+          })
+          if(saveUser[0].success){
+            console.log("A new user has been created !")
+          }
+          else {
+            console.log("This user already exists !")
+          }
         }
       }
       evalToken();
-    }, [fullResult, accessToken]);
-
-    const getUserInfo = async (token : any) => {
-      try {
-
-      } catch (error) {
-        // Add your own error handler here
-      }
-    };
-
-    const getDatas = async (token : any) => {
-      try {
-        const user_google = await dispatchAPI({
-            type_request: 'GET', 
-            url: 'googlefit/getuser',
-            datas: {
-                token: token,
-            }
-        })
-        console.log(user_google)
-        if(!user_google[0].success){
-            await _deleteDatas('accessToken');
-            setAccessToken({});
-        }
-        else {
-            setUserInfo(user_google);
-            const datas_gootle = await dispatchAPI({
-                type_request: 'GET', 
-                url: 'googlefit/getdatas',
-                datas: {
-                    token: token,
-                    id: user_google[1].id
-                }
-            })
-            setDatasGoogle(datas_gootle);  
-            setDatasHeatMap(datas_gootle);
-        }
-      }
-      catch (e) {
-      }
-    };
+    }, [fullResult]);
 
   return (
     <View>
-        <Button title={"Authenticate"}  disabled={!request} onPress={() => promptAsync()} />
-        <Text>Click on the link up below to authenticate on Google</Text>
+      <TouchableOpacity style={styles.buttonContainer} disabled={!request} onPress={() => promptAsync()}>
+        <Text style={[fonts.TEXT_BUTTONS, {color: colors.TEXT_BUTTON, marginRight: spacing.SPACING_XXS}]}>Enregistrer un patient</Text>
+        <PlusIcon width={25} height={24} color={colors.TEXT_BUTTON} />
+      </TouchableOpacity>
     </View>
   )
 }
 
 export default GoogleFit
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  buttonContainer: {
+    backgroundColor: colors.PRIMARY_COLOR_BUTTON,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.SPACING_S,
+    paddingHorizontal: spacing.SPACING_XXL,
+    borderRadius: spacing.SPACING_XXL
+  }
+})

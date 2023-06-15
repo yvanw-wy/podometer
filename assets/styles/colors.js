@@ -1,0 +1,22 @@
+const colors = {
+    TEXT_INPUT: '#979799',
+    PLACEHOLDER_INPUT: '#C7C7C7',
+    BACKGROUND_SCREEN: "#F3F3F3",
+    BACKGROUND_SCREEN_IMAGE: "#6c72e1",
+    PRIMARY_COLOR_BUTTON: "#6A6DDC",
+    PRIMARY_TEXT_COLOR: "#2C2C2C",
+    SECONDARY_TEXT_COLOR: "#828285",
+    UNPRESSED_BUTTON: "#dcdcee5c",
+    PRESSED_BUTTON: "#e1e2ff",
+    OUTLINED_BUTTON: "#828285",
+    LOGO_COLOR: "#484848",
+    ALT_LOGO_COLOR: "#FFFFFF",
+    ERROR_COLOR: '#cf1322',
+    SHADOWS: {
+        TOP_SHADOW: "#dedfef", 
+        BOTTOM_SHADOW: "#FFFFFF",
+    },
+    TEXT_BUTTON: "#FFF"
+}
+
+export default colors
