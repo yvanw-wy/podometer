@@ -1,13 +1,37 @@
+For accessing the server, you need to precise the ip address of your pc as the parameter of the address in ipContext
+
+For connecting to the app
+====================
+email: test_doctor@gmail.com
+mot de passe: test
+
+
+For acessing PgAdmin
+====================
+url: 127.0.0.1:5050
+email: root@root.com
+password: root
+
+For connecting to postgres in pgadmin
+=====================================
+name: podometer
+host name/address: 192.168.0.2
+username: postgres
+password: password
+port: 5432
+database: podometer
+
+
 For docker
 ===========
 # Launching the server
 docker-compose build
-docker-compose update
+docker-compose up
 
 
 For postgres
 ===========
-# Launching postgres
+# Launching postgres container
 docker exec -it postgres /bin/bash 
 
 # Accessing the postgres environment from the postgres role name

@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from googleapiclient.discovery import build
+from googlefit.models import Doctors
+from googlefit.serializers import DoctorSerializer
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import numpy as np
 import pandas as pd
@@ -12,9 +14,15 @@ import ast
 fpath = os.path.join(os.path.dirname(__file__), 'utils')
 sys.path.append(fpath)
 import analysis
+from rest_framework import viewsets
 
+# To utilitize the doctors REST APIS (GET, POST, PUT, DELETE)
+# To access the api, go to the endpoint: /doctors/doctors
+class DoctorViewSet(viewsets.ModelViewSet):
+    queryset = Doctors.objects.all()
+    serializer_class = DoctorSerializer
 
-#Function used to save user infos in the db
+#Function used to save patients infos in firebase db
 def saveUserInfos(database, token, refreshToken):
     # First, get user informations from the token: User email, name, id
     resp_account = requests.get(
@@ -58,7 +66,7 @@ def saveUserInfos(database, token, refreshToken):
         { 'id': user_id }
     ]
 
-def getNewAccessToken(refreshToken, id, database, date):
+def getNewAccessToken(refreshToken, id, database, date, startTime):
     # Get new access token from the refresh token
     resp_account = requests.post(
         url = "https://oauth2.googleapis.com/token",
@@ -76,10 +84,11 @@ def getNewAccessToken(refreshToken, id, database, date):
         'accessToken': newAccessToken
     })
     # Get new datas from that token
-    resp = fetchStepsGoogle(newAccessToken, date)
+    resp = fetchStepsGoogle(newAccessToken, date, startTime)
+    
     return resp
 
-def fetchStepsGoogle (token, date):
+def fetchStepsGoogle (token, date, startTime):
     resp = requests.post(
         url = "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
         headers = {
@@ -94,12 +103,13 @@ def fetchStepsGoogle (token, date):
             "bucketByTime": { 
                 "durationMillis": 3600000 
             },
-            "startTimeMillis": 1677702000000, #From 1st march
+            "startTimeMillis": startTime, #From 1st march : 1677702000000
             "endTimeMillis": date, #Till today
             "Content-Type": "application/json"
         }
     )
     return resp
+
 #Function used to get step datas
 def getStepsGoogle(database):
     output = []
@@ -107,30 +117,54 @@ def getStepsGoogle(database):
     output_mean = []
     output_days = []
     today_in_millis = int(datetime.now().timestamp()*1000)
+    current_date = datetime.today()
+    delta = timedelta(days=45)  # 1.5 months is approximately 45 days
+    target_date = current_date - delta
+    estimatedStartDate = int(target_date.timestamp()*1000)
 
 
     # First, get all user datas from firebase
     users = database.child("users").get().val()
     for user, user_data in users.items():
+        startTime = 0
+        # Get the last time their datas has been fetched and use this last time as the startimeMillis parameter of googleFit to fetch their datas
+        # If this user doesn't have any data yet, the startTimeMillis is just 1.5 month before the date of today
+        getUserStartTime = database.child("bucket").child(user).get().val()
+        last_index = len(getUserStartTime) if getUserStartTime else 0
+        new_index = last_index
+        if getUserStartTime is None:
+            startTime = estimatedStartDate
+        else:
+            # Only extract the last dataset from that db
+            lastDataset = getUserStartTime[-1]
+            startTimeLastDataset = lastDataset.get('startTimeMillis')
+            startTime = startTimeLastDataset
+
         # Get user informations using his access token
         token = user_data['accessToken']
         refreshToken = user_data['refreshToken']
         id = user
-        resp = fetchStepsGoogle(token, today_in_millis)
+        resp = fetchStepsGoogle(token, today_in_millis, startTime)
         if 'error' in resp.text:
             # Check if it's the access token the problem. Then ask a new one, from the refreshToken
             json_error = ast.literal_eval(resp.text)
             status = json_error['error']['status']
             if status == 'UNAUTHENTICATED':
                # Obtain a new access token and get the datas
-               resp = getNewAccessToken(refreshToken, id, database, today_in_millis)
+               resp = getNewAccessToken(refreshToken, id, database, today_in_millis, startTime)
                datas = resp.json()['bucket']
-               database.child("bucket").child(id).set(datas)  # Setting the new datas to the db
+               i = new_index
+               while i < len(datas) :
+                    database.child("bucket").child(id).child(i).set(datas[i])  # Setting the new datas to the db
+                    i += 1
         else :
             datas = resp.json()['bucket']
-            database.child("bucket").child(id).set(datas)  # Setting the new datas to the db
+            i = new_index
+            while i < len(datas) :
+                database.child("bucket").child(id).child(i).set(datas[i])  # Setting the new datas to the db
+                i += 1
     steps_datas = database.child("bucket").get().val() # Getting all datas from the user
-
+    
     # Formatting google fit datas
     for user, buckets in steps_datas.items():
         if type(buckets) != str:
