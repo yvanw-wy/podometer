@@ -5,6 +5,11 @@ import pyrebase
 from googlefit.models import Doctors
 from googlefit.serializers import DoctorSerializer
 from django.contrib.auth.hashers import make_password, check_password
+import smtplib
+from email.message import EmailMessage
+import urllib.parse
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode, quote_plus
+from datetime import datetime, timedelta
 
 config = {
     'apiKey': "AIzaSyBpwYU7VlAGmVZ_15euXRk9TI_xHbBbvm4",
@@ -108,3 +113,70 @@ def registerpatient (req):
     print(email)
     resp = JsonResponse({ 'success': True, 'message': "Un email a été envoyé à ce patient pour qu'il s'enregistre !"}, safe=False)
     return resp
+
+
+
+# Constructing signing up link using encoded user's email
+users = database.child("users").get().val()
+new_email = 'audbemo3@gmail.com'
+link_signup = 'https://bouzou.files.wordpress.com/2021/02/grimace-073....jpg?w=210' + urllib.parse.quote(new_email)
+
+# generating message to user
+def sending_message():
+    for user, content in users.items():
+        email = content['user_email']
+        if new_email != email:
+            print("Mail absent")
+            # Authentification and configuration of STMP server
+            smtp_server = 'smtp.gmail.com'
+            smtp_port = 587
+            smtp_username = 'audrey.nkowa@2024.icam.fr'
+            smtp_password = 'dmxvbwaokokfhunq'
+            
+            # Email message creation
+            msg = EmailMessage()
+            msg['Subject'] = 'Enregistrez-vous dès maintenant pour votre suivi médical à distance'
+            msg['From'] = 'audrey.nkowa@2024.icam.fr'
+            msg['To'] = new_email
+            
+            # Message content
+            msg.set_content('Cher(e) patient(e), \n\nVotre médecin traitant vous a recommandé notre plateforme de suivi médical à distance. Veuillez cliquer sur le lien suivant pour vous inscrire; \n\n' + link_signup +' \n\nMerci de votre collaboration. \n\nCordialement.')
+
+            # Sending email via SMTP
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_username, smtp_password)
+                server.send_message(msg)
+            break
+        else:
+            print("Mail present")
+
+# creating expiration
+def add_expiration(url, expiration_minutes):
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    query_params['expiration'] = int(datetime.now().timestamp()) + expiration_minutes * 60
+    encoded_params = urlencode(query_params, doseq=True)
+    modified_url = urlunparse(parsed_url._replace(query=quote_plus(encoded_params)))
+    return modified_url
+
+# Vérifying if Url expired
+def is_expired(url):
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    expiration = query_params.get('expiration', [None])[0]
+    if expiration:
+        expiration_timestamp = int(expiration)
+        return datetime.now().timestamp() > expiration_timestamp
+    return False
+
+# creating expiration time
+url = link_signup
+url_with_expiration = add_expiration(url, 1)  # Add 60 minutes expiration
+print("URL avec expiration :", url_with_expiration)
+
+# Verifying if url expired
+if is_expired(url_with_expiration):
+    print("L'URL a expiré.")
+else:
+    print("L'URL est encore valide.")
