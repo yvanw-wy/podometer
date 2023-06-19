@@ -78,7 +78,7 @@ let propsArray = [
 
 const LeftSection = (props: tabChooseUser) => {
   const { indexActive, setIndexActive, datasGoogle, selectedLevelGraph, setSelectedLevelGraph } = props;
-  let [refTabIndex, setRefTabIndex] = useState(-1);
+  let [refTabIndex, setRefTabIndex] = useState(0);
   let [refCardIndex, setRefCardIndex] = useState(0);
   const scrollXTab = useRef(0);
   const scrollXCard = useRef(0);
@@ -162,14 +162,6 @@ const LeftSection = (props: tabChooseUser) => {
                 marginLeft: spacing.SPACING_M
               }}
             >
-              <Tabs 
-                isIcon={false} 
-                name={"Tous"} 
-                isActive={refTabIndex===-1} 
-                firstIndex={false} 
-                secondary={false} 
-                onPress={() => setRefTabIndex(-1)}
-              />
               <FlatList
                 data={datasGoogle} 
                 keyExtractor={(item : any) => item.user_id}

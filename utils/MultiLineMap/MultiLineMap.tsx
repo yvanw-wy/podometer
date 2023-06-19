@@ -11,13 +11,14 @@ interface propsLineMap {
     mustScale: any
 }
 
-const LineMap = (props: propsLineMap) => {
+
+const MultiLineMap = (props: propsLineMap) => {
     const { color, background , month, mustScale} = props;
     let props_array_datas: any = []
     const [data, setData] = useState(props_array_datas);
     useEffect(() => {
         asyncFetch();
-    }, []);
+    }, [month]);
 
     const scale = (number : any, [inMin , inMax] : any, [outMin, outMax] : any) => {
         return (number - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
@@ -29,9 +30,11 @@ const LineMap = (props: propsLineMap) => {
         json.map((data : any) => {
             let newObj = {
                 Date: null,
-                scales: null
+                scales: null,
+                category: null
             };
             newObj.Date = data.Date;
+            newObj.category = data.category;
             if(mustScale){
                 newObj.scales = scale(data.scales, [0, max], [0, 5])
             }
@@ -44,6 +47,7 @@ const LineMap = (props: propsLineMap) => {
     }
 
     const asyncFetch = () => {
+        console.log(month)
         if(month.length){
             const output = parseDatas(month)
             setData(output)
@@ -67,9 +71,10 @@ const LineMap = (props: propsLineMap) => {
         xField: 'Date' as any,
         yField: 'scales' as any,
         legend: null as any,
-        height: mustScale ? 40  : 340 as any,
-        width: mustScale ? 40 : 350 as any,
-        color: color as any,
+        height: 340 as any,
+        width: 450 as any,
+        color: [color, '#ff4d4f'] as any,
+        seriesField: 'category' as any,
         areaStyle: () => {
             return {
               fill: `l(270) 0:${background} 0.5:${colors.PRESSED_BUTTON} 1:#1890ff`,
@@ -77,18 +82,41 @@ const LineMap = (props: propsLineMap) => {
         },
         yAxis: {
             label: {
-              formatter: (v : any) => '',
+              formatter: (v : any) => v,
             },
             grid: {
                 line: null as any
             },
+            title: {
+                text: 'Nombre de pas',
+                style: {
+                  fontSize: 16,
+                },
+            },
         },
         xAxis: {
+            label: {
+                formatter: (v : any) => {
+                    const date = new Date(v)
+                    const day = date.getDate()
+                    if(day % 5 === 0){
+                        return day + 'j'
+                    }
+                    else {
+                        return ''
+                    }
+                },
+            },
             grid: {
                 line: null as any
             },
             line: false as any,
-            label: false as any,
+            title: {
+                text: 'Jours du mois',
+                style: {
+                  fontSize: 16,
+                },
+            },
         },
         animation: {
             appear: {
@@ -101,11 +129,11 @@ const LineMap = (props: propsLineMap) => {
     };
   return (
     <View>
-      <Area {...config} />
+      <Line {...config} />
     </View>
   )
 }
 
-export default LineMap
+export default MultiLineMap
 
 const styles = StyleSheet.create({})

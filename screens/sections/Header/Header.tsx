@@ -4,6 +4,7 @@ import Logo from '../../../components/Logo/Logo'
 import GoogleFit from '../../../utils/Google/GoogleFit'
 import Profile from '../../../components/Profile/Profile'
 import spacing from '../../../assets/styles/spacing'
+import { Modal } from 'antd'
 
 interface propsGoogleFit {
   setDatasGoogle: any,
@@ -14,7 +15,6 @@ interface propsGoogleFit {
 
 const Header = (props: propsGoogleFit) => {
   const { setDatasGoogle, isLogin, name, email } = props;
-
   return (
     <View style={[styles.headerContainer, { justifyContent: isLogin ? 'center': 'space-between', position: isLogin ? 'absolute' : 'relative', zIndex: 1, top: isLogin ? spacing.SPACING_XXL : 0 }]}>
       <Logo isLogin={isLogin} />

@@ -77,8 +77,8 @@ const LoginScreen = ({ navigation } : any) => {
               }
             </View>
             <View>
-              <InputText text={email} setText={setEmail} type="text" label="Email" />
-              <InputText text={password} setText={setPassword} type="password" label="Password" />
+              <InputText text={email} setText={setEmail} type="text" label="Email" isModal={false} />
+              <InputText text={password} setText={setPassword} type="password" label="Password" isModal={false} />
               <TouchableOpacity style={styles.buttonContainer} disabled={isLoading} onPress={() => checkData()}>
                 {
                   isLoading ?

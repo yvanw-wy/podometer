@@ -8,18 +8,19 @@ interface propsInput {
     setText: any,
     type: any,
     label: any,
+    isModal: any
 
 }
 
 const InputText = (props: propsInput) => {
-  const { text, setText, type, label } = props;
+  const { text, setText, type, label, isModal } = props;
 
   
   return (
     <View>
       <Text style={{ color: colors.PRIMARY_TEXT_COLOR, fontWeight: '600' }}>{label}</Text>
       <TextInput 
-        style={[styles.textInput, { borderWidth: 1, borderColor: colors.TEXT_INPUT }]} 
+        style={[styles.textInput, { borderWidth: 1, borderColor: colors.TEXT_INPUT, maxWidth: isModal ? '100%': 400 }]} 
         placeholder={label} 
         onChangeText={(value) => setText(value)}
         placeholderTextColor={colors.PLACEHOLDER_INPUT}
@@ -38,7 +39,6 @@ const styles = StyleSheet.create({
         borderColor: colors.TEXT_INPUT,
         borderRadius: 5,
         padding: spacing.SPACING_S,
-        marginVertical: spacing.SPACING_XS,
-        maxWidth: 400
+        marginVertical: spacing.SPACING_XS
     }
 })

@@ -17,17 +17,28 @@ const windowHeight = Dimensions.get('window').height;
 
 const HomeScreen = ({ route, navigation } : any) => {
   // const { name, email } = route.params;
-  const name = "test"
-  const email = "test2"
-  let props_datas: any = {}
+  const name = "Yba"
+  const email = "qdqqs"
+  let props_datas: any = []
   let props_array_datas: any = []
   const [datasGoogle, setDatasGoogle] = useState(props_datas);
   const [tabUserActive, setTabUserActive] = useState(0);
+  const [number_user, setNumber_user] = useState(0);
+  const [steps , setSteps] = useState(0);
   // Each value in the selectedLevelGraph array represents the index of the patient and the level of detail we want to reach
   // Eg: [0] means: display the 1st user's aggregated datas, [1] means: display the second user data ,...
   // But [0, 0] means: display the 1st user's 1st month data, [0, 1] means: display the 1st user second month datas
   // And [0, 0, 0] means: display the 1st 1ser 1st month 1st day datas, ... 
   const [selectedLevelGraph, setSelectedLevelGraph] = useState([0]); 
+
+
+  useEffect(() => {
+    setNumber_user(datasGoogle.length);
+    let steps = 0;
+    let count_steps = 1;
+
+    
+  }, [datasGoogle])
 
   return (
     <View style={{
@@ -37,12 +48,12 @@ const HomeScreen = ({ route, navigation } : any) => {
       height: '100%'
     }}>
       <Header setDatasGoogle={setDatasGoogle} isLogin={false} name={name} email={email} />
-      <Hero number_of_patients={2} number_of_footsteps={10000} />
+      <Hero number_of_patients={number_user} number_of_footsteps={steps} />
       <View style={styles.bodyContainer}>
         <LeftSection indexActive={tabUserActive} setIndexActive={setTabUserActive} datasGoogle={datasGoogle} selectedLevelGraph={selectedLevelGraph} setSelectedLevelGraph={setSelectedLevelGraph} />
         <RightSection datasGoogle={datasGoogle} selectedLevelGraph={selectedLevelGraph} setSelectedLevelGraph={setSelectedLevelGraph} />
       </View>
-      <Calendar />
+      <Calendar datasGoogle={datasGoogle} selectedLevelGraph={selectedLevelGraph} setSelectedLevelGraph={setSelectedLevelGraph} />
     </View>
   )
 }

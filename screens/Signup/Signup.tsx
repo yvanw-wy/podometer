@@ -87,11 +87,11 @@ const Signup = ({ navigation } : any) => {
                 }
               </View>
               <View>
-                <InputText text={name} setText={setName} type="family-name" label="Nom et Prénom" />
-                <InputText text={email} setText={setEmail} type="email" label="Email" />
-                <InputText text={kbis} setText={setKbis} type="text" label="Kbis (Siret de l'entreprise)" />
-                <InputText text={password} setText={setPassword} type="password" label="Mot de passe" />
-                <InputText text={confirmPassword} setText={setConfirmPassword} type="password" label="Confirmer le mot de passe" />
+                <InputText text={name} setText={setName} type="family-name" label="Nom et Prénom" isModal={false} />
+                <InputText text={email} setText={setEmail} type="email" label="Email" isModal={false} />
+                <InputText text={kbis} setText={setKbis} type="text" label="Kbis (Siret de l'entreprise)" isModal={false} />
+                <InputText text={password} setText={setPassword} type="password" label="Mot de passe" isModal={false} />
+                <InputText text={confirmPassword} setText={setConfirmPassword} type="password" label="Confirmer le mot de passe" isModal={false} />
                 <TouchableOpacity style={styles.buttonContainer} disabled={isLoading} onPress={() => checkData()}>
                   {
                     isLoading ?

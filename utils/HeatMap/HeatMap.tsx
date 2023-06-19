@@ -28,7 +28,7 @@ interface propsHeatMap {
     width: any,
     height: any,
     legend: any,
-    hasAxis: any
+    hasAxis: any,
 }
 
 const HeatMap = (props: propsHeatMap) => {
@@ -49,7 +49,6 @@ const HeatMap = (props: propsHeatMap) => {
     // })
     // setMonthIndex(trackMonth)
     // setRawDatasMonthly(output_month)
-    console.log(datas_mean_refactored)
     setRefactoredMean(datas_mean_refactored);
   }, [datas_mean]);
 

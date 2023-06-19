@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { TouchableOpacity } from 'react-native'
 import colors from '../../../assets/styles/colors'
 import spacing from '../../../assets/styles/spacing'
@@ -12,6 +12,8 @@ import Animated, {
 import HeatMap from '../../../utils/HeatMap/HeatMap'
 import { Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
+import LineMap from '../../../utils/LineMap/LineMap'
+import MultiLineMap from '../../../utils/MultiLineMap/MultiLineMap'
 
 interface propsDatas {
   datasGoogle: any,
@@ -21,6 +23,7 @@ interface propsDatas {
 
 const RightSection = (props: propsDatas) => {
   const { datasGoogle, selectedLevelGraph, setSelectedLevelGraph } = props;
+  const [formattedDatas2, setFormattedDatas2] = useState([]);
   const style = useAnimatedStyle(() => {
     console.log("Running on the UI thread");
     return {
@@ -29,6 +32,54 @@ const RightSection = (props: propsDatas) => {
   });
   const isActive = true;
   const isActive2 = false;
+
+  useEffect(() => {
+    console.log(selectedLevelGraph)
+  }, [selectedLevelGraph])
+
+  useEffect(() => {
+    // Create the first array of average values
+    if(datasGoogle.length){
+      const nbr_users = datasGoogle.length
+      const output = []
+      for(let i = 0; i < datasGoogle.length; i++){
+        const user =  {
+          lower_bound: datasGoogle[i]['lower_bound'],
+          upper_bound: datasGoogle[i]['upper_bound'],
+          mean: datasGoogle[i]['mean'],
+          data_months: [],
+          first_month: 0,
+          last_month: 2,
+          name_user: datasGoogle[i]['user_name']
+        }
+        let init = 0;
+        datasGoogle[i].month_datas.map((month : any) => {
+          let month_scan = []
+          for (const key in month.startTimeMillis) {
+            const date = month.startTimeMillis[key]
+            month_scan.push(
+              { Date: date, 
+                scales: month['dataset.point.value.intVal'][key],
+                category: "Activités de l'utilisateur" 
+              },
+              { Date: date, 
+                scales: 6.951 * datasGoogle[i]['upper_bound'], // This is the constant applied so that the bounds matches the scales of number of steps of the user
+                category: "Seuil maximal" 
+              }
+            )
+          }
+          if(init === 0){
+            user.first_month = new Date(month_scan[0]['Date']).getMonth()
+          }
+          init = 1
+          user.last_month = new Date(month_scan[month_scan.length - 1]['Date']).getMonth() + 5
+          user.data_months.push(month_scan)
+        })
+        output.push(user)
+      }
+      setFormattedDatas2(output)
+    }
+  }, [datasGoogle]);
     
   return (
     <View style={styles.rightContainer}>
@@ -40,7 +91,14 @@ const RightSection = (props: propsDatas) => {
                 !datasGoogle.length ?
                   <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
                 :
-                <HeatMap datas_mean={datasGoogle[selectedLevelGraph[0]].datas_mean} width={450} height={340} legend hasAxis />
+                <>
+                  {
+                    selectedLevelGraph.length == 1 ?
+                      <HeatMap datas_mean={datasGoogle[selectedLevelGraph[0]].datas_mean} width={450} height={340} legend hasAxis />
+                    :
+                      formattedDatas2.length && <MultiLineMap mustScale={false} month={formattedDatas2[selectedLevelGraph[0]].data_months[selectedLevelGraph[1]]} color={colors.PRIMARY_COLOR_BUTTON} background={colors.BACKGROUND_SCREEN} />
+                  }
+                </>
               }
           </View>
           </View>

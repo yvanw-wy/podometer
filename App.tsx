@@ -10,9 +10,28 @@ import LoginScreen from './screens/Login/LoginScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Signup from './screens/Signup/Signup';
+import SaveGoogle from './screens/SaveGoogle/SaveGoogle';
+import * as Linking from 'expo-linking'
+import * as WebBrowser from 'expo-web-browser'
 
 SplashScreen.preventAutoHideAsync();
 const Stack = createNativeStackNavigator();
+
+const prefix = Linking.createURL('/');
+const config = {
+  screens: {
+    SaveGoogle: "register",
+    Home: "home",
+    Signup: "signup",
+    Login: "login"
+  },
+}
+const linking = {
+  prefixes: [
+    prefix
+  ],
+  config,
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -31,13 +50,14 @@ export default function App() {
 
   return (
     <SafeAreaView style={{ width: '100%', height: '100%' }}>
-      <NavigationContainer>
+      <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
         <Stack.Navigator>
           {/* <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
           <Stack.Screen name="Signup" component={Signup} options={{headerShown: false}} /> */}
           <Stack.Screen name="Home" options={{headerShown: false}} >
             {(props : any) => <HomeScreen {...props} />}
           </Stack.Screen>
+          <Stack.Screen name="SaveGoogle" component={SaveGoogle} options={{headerShown: false}} />
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
