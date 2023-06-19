@@ -46,6 +46,7 @@ def inactivity_user(row):
 
 def classify_activity(df):
     df_user = df.copy()
+
     df_user['hour'] = df_user['startTimeMillis'].dt.hour # Create a new column named "Hour"
     df_user["startTimeMillis"] = pd.to_datetime(df_user["startTimeMillis"]).dt.date
     df_user = df_user[df_user['startTimeMillis'] == date.today()]
@@ -63,12 +64,17 @@ def classify_activity(df):
             knn = pickle.load(f)
         y_pred = knn.predict(actual_data)
         output = array_activities[y_pred[0]]
-        print(output)
         return output
 
 
-
 def data_viz_front(df):
+    df_month = df.copy()
+    df_month = df_month.groupby(df_month['startTimeMillis'].dt.date)['dataset.point.value.intVal'].sum().reset_index()
+    df_month['startTimeMillis'] = pd.to_datetime(df_month['startTimeMillis'])
+    df_month = df_month.groupby(pd.Grouper(key='startTimeMillis', freq='M'))
+    df_month = [group.to_dict() for _,group in df_month]
+
+
     df['day'] = df['startTimeMillis'].dt.day # Create a new column named "Day"
     df['hour'] = df['startTimeMillis'].dt.hour # Create a new column named "Hour"
 
@@ -78,7 +84,8 @@ def data_viz_front(df):
     df_month_grouper = df.copy() # Create the dataframe which will hold the values of the series aggregated per month-year
     df_month_grouper = df_month_grouper.groupby(pd.Grouper(key='startTimeMillis', freq='M'))
     df_month_grouper = [group.to_dict() for _,group in df_month_grouper]
-    return [df_month_grouper, df_mean2] 
+
+    return [df_month_grouper, df_mean2, df_month] 
 
 
 def check_alert(df, confidence_datas, database, id):

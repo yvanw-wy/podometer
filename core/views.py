@@ -1,7 +1,5 @@
 from django.shortcuts import render
-from fitbit.views import *
 from django.http import JsonResponse, HttpResponse
-from fitbit.models import Fitbit
 from googlefit.views import *
 import pyrebase
 from googlefit.models import Doctors
@@ -102,4 +100,11 @@ def signup (req):
             'id': id,
             'name': name
         }}, safe=False)
+    return resp
+
+# Register a patient
+def registerpatient (req):
+    email = req.GET.get('email', '')
+    print(email)
+    resp = JsonResponse({ 'success': True, 'message': "Un email a été envoyé à ce patient pour qu'il s'enregistre !"}, safe=False)
     return resp

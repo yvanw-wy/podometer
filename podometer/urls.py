@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls.conf import include
 from django.contrib import admin
 from django.urls import path
-from core.views import index, getDatasGoogle, registerUserGoogle, login, signup
+from core.views import index, getDatasGoogle, registerUserGoogle, login, signup, registerpatient
 from googlefit.urls import router as doctor_router
 from rest_framework import routers
 
@@ -30,6 +30,7 @@ urlpatterns = [
     path('googlefit/getdatas', getDatasGoogle, name='datasgoogle'),
     path('account/logindoctor', login, name='login'),
     path('account/registerdoctor', signup, name='register'),
+    path('account/registerpatient', registerpatient, name='registerpatient'),
     path('doctors/', include(router.urls)),
     path('admin/', admin.site.urls),
 ]

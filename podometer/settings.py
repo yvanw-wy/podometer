@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
-    'fitbit',
     'rest_framework',
     'googlefit',
     'django_crontab',

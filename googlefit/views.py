@@ -189,14 +189,18 @@ def getStepsGoogle(database):
             activity_type = analysis.classify_activity(df)
 
             # Function useful to rearrange the dataframe format for data viz in the front-end
-            [df_month_grouper, df_mean2] = analysis.data_viz_front(df)
+            [df_month_grouper, df_mean2, df_month] = analysis.data_viz_front(df)
             
             output.append({ 
                 'user_name': user_infos['name'], 
                 'user_id': user, 
                 'datas_month_grouper': df_month_grouper, 
                 'datas_mean': df_mean2.to_dict(), 
-                'datas': df.to_dict(), 
+                'datas': df.to_dict(),
+                'month_datas': df_month,
+                'lower_bound': confidence_interval['lower_bound'],
+                'upper_bound': confidence_interval['upper_bound'],
+                'mean': confidence_interval['mean'], 
                 'features': {
                     'should_alert': should_alert,
                     'type_activity': activity_type
@@ -210,6 +214,10 @@ def getStepsGoogle(database):
                 'datas_month_grouper': {}, 
                 'datas_mean': {}, 
                 'datas': {},
+                'month_datas': [],
+                'lower_bound': -1325.0327543564667,
+                'upper_bound': 1325.0327543564667,
+                'mean': 9211.479326676907,
                 'features': {
                     'should_alert': False,
                     'type_activity': 'NONE'
