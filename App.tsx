@@ -20,7 +20,7 @@ const Stack = createNativeStackNavigator();
 const prefix = Linking.createURL('/');
 const config = {
   screens: {
-    SaveGoogle: "register",
+    SaveGoogle: "register/:id",
     Home: "home",
     Signup: "signup",
     Login: "login"
@@ -52,8 +52,8 @@ export default function App() {
     <SafeAreaView style={{ width: '100%', height: '100%' }}>
       <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
         <Stack.Navigator>
-          {/* <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
-          <Stack.Screen name="Signup" component={Signup} options={{headerShown: false}} /> */}
+          <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+          <Stack.Screen name="Signup" component={Signup} options={{headerShown: false}} />
           <Stack.Screen name="Home" options={{headerShown: false}} >
             {(props : any) => <HomeScreen {...props} />}
           </Stack.Screen>

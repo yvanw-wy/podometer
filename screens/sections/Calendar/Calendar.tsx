@@ -122,36 +122,38 @@ const Calendar = (props: PropsCalendar) => {
 
   useEffect(() => {
     // Create the first array of average values
-    if(datasGoogle.length){
-      const nbr_users = datasGoogle.length
-      const output = []
-      for(let i = 0; i < datasGoogle.length; i++){
-        const user =  {
-          lower_bound: datasGoogle[i]['lower_bound'],
-          upper_bound: datasGoogle[i]['upper_bound'],
-          mean: datasGoogle[i]['mean'],
-          data_months: [],
-          first_month: 0,
-          last_month: 2,
-          name_user: datasGoogle[i]['user_name']
+    if(datasGoogle){
+      if(datasGoogle.length){
+        const nbr_users = datasGoogle.length
+        const output = []
+        for(let i = 0; i < datasGoogle.length; i++){
+          const user =  {
+            lower_bound: datasGoogle[i]['lower_bound'],
+            upper_bound: datasGoogle[i]['upper_bound'],
+            mean: datasGoogle[i]['mean'],
+            data_months: [],
+            first_month: 0,
+            last_month: 2,
+            name_user: datasGoogle[i]['user_name']
+          }
+          let init = 0;
+          datasGoogle[i].month_datas.map((month : any) => {
+            let month_scan = []
+            for (const key in month.startTimeMillis) {
+              const date = month.startTimeMillis[key]
+              month_scan.push({ Date: date, scales: month['dataset.point.value.intVal'][key] })
+            }
+            if(init === 0){
+              user.first_month = new Date(month_scan[0]['Date']).getMonth()
+            }
+            init = 1
+            user.last_month = new Date(month_scan[month_scan.length - 1]['Date']).getMonth() + 5
+            user.data_months.push(month_scan)
+          })
+          output.push(user)
         }
-        let init = 0;
-        datasGoogle[i].month_datas.map((month : any) => {
-          let month_scan = []
-          for (const key in month.startTimeMillis) {
-            const date = month.startTimeMillis[key]
-            month_scan.push({ Date: date, scales: month['dataset.point.value.intVal'][key] })
-          }
-          if(init === 0){
-            user.first_month = new Date(month_scan[0]['Date']).getMonth()
-          }
-          init = 1
-          user.last_month = new Date(month_scan[month_scan.length - 1]['Date']).getMonth() + 5
-          user.data_months.push(month_scan)
-        })
-        output.push(user)
+        setFormattedDatas(output)
       }
-      setFormattedDatas(output)
     }
   }, [datasGoogle]);
 

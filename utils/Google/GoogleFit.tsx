@@ -30,14 +30,19 @@ const GoogleFit = (props: propsGoogleFit) => {
       // Read cookies to check if there is an access token, and if so, return it
       const getDatas = async () => {
         try {
-          const datas_google = await dispatchAPI({
+          _retrieveDatas('doctor_id')
+          .then( async (res) => {
+            const doctor_id = res;
+            const datas_google = await dispatchAPI({
               type_request: 'GET', 
               url: 'googlefit/getdatas',
               datas: {
-                
+                idDoctor: doctor_id
               }
           })
+          
           setDatasGoogle(datas_google);
+          })
         }
         catch (e) {
         }
@@ -63,27 +68,32 @@ const GoogleFit = (props: propsGoogleFit) => {
         setErrorForm('Veuillez renseigner un email')
       } 
       else {
-        const savePatient = await dispatchAPI({
-          type_request: 'GET', 
-          url: 'account/registerpatient',
-          datas: {
-              email: email,
-          }
-          })
-          if(savePatient.success){
-            // Send a notification to the dashboard testifying that an email has been sent to the patient
-            api.open({
-              message: 'Email envoyé !',
-              description:
-                savePatient.message,
-              icon: <CheckCircleFilled style={{ color: colors.PRIMARY_COLOR_BUTTON }} />,
-            });
-            setErrorForm('')
-            handleCancel() 
-          }
-          else {
-            setErrorForm(savePatient.message)
-          }
+        _retrieveDatas('doctor_id').then( async (res) => {
+          const doctor_id = res
+          console.log(doctor_id)
+          const savePatient = await dispatchAPI({
+            type_request: 'GET', 
+            url: 'account/registerpatient',
+            datas: {
+                email: email,
+                url: 'http://localhost:19006/register/' + doctor_id
+            }
+            })
+            if(savePatient.success){
+              // Send a notification to the dashboard testifying that an email has been sent to the patient
+              api.open({
+                message: 'Email envoyé !',
+                description:
+                  savePatient.message,
+                icon: <CheckCircleFilled style={{ color: colors.PRIMARY_COLOR_BUTTON }} />,
+              });
+              setErrorForm('')
+              handleCancel() 
+            }
+            else {
+              setErrorForm(savePatient.message)
+            }
+        })
       }
     }
 

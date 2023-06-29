@@ -34,7 +34,7 @@ const Hero = (props: indicator) => {
                 <MedianIcon width={iconsize.iconsize_XXL} height={iconsize.iconsize_XXL} color={colors.PRIMARY_COLOR_BUTTON} />
                 <View style={{ marginLeft: spacing.SPACING_XS }}>
                     <Text style={[fonts.HEADER, { color: colors.PRIMARY_COLOR_BUTTON }]}>{number_of_footsteps}</Text>
-                    <Text style={[fonts.TEXT_BUTTONS, { color: colors.SECONDARY_TEXT_COLOR, fontWeight: 'normal', fontSize: textStyle.TEXT_S }]}>Nombre moyen de pas</Text>
+                    <Text style={[fonts.TEXT_BUTTONS, { color: colors.SECONDARY_TEXT_COLOR, fontWeight: 'normal', fontSize: textStyle.TEXT_S }]}>Nombre moyen de pas/jour</Text>
                 </View>
             </View>  
         </View>

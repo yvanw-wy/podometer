@@ -37,44 +37,7 @@ const array_type = [
   }
 ]
 
-let propsArray = [
-  {
-    id: '1',
-    name: 'Yvan wonkap',
-    status: 'AU_REPOS',
-    datas: []
-  },
-  {
-    id: '2',
-    name: 'Ganesh minkeng',
-    status: 'MARCHE_PASSIVE',
-    datas: []
-  },
-  {
-    id: '3',
-    name: 'Ganesh minkeng',
-    status: 'MARCHE_PASSIVE',
-    datas: []
-  },
-  {
-    id: '4',
-    name: 'Ganesh minkeng',
-    status: 'MARCHE_PASSIVE',
-    datas: []
-  },
-  {
-    id: '5',
-    name: 'Ganesh minkeng',
-    status: 'MARCHE_PASSIVE',
-    datas: []
-  },
-  {
-    id: '6',
-    name: 'Ganesh minkeng',
-    status: 'MARCHE_PASSIVE',
-    datas: [],
-  }
-] as any;
+let propsArray = [] as any;
 
 const LeftSection = (props: tabChooseUser) => {
   const { indexActive, setIndexActive, datasGoogle, selectedLevelGraph, setSelectedLevelGraph } = props;
@@ -94,14 +57,20 @@ const LeftSection = (props: tabChooseUser) => {
   }
   
   const nextContentTab = () => {
-    if(refTabIndex < propsArray.length - 1){
+    if(refTabIndex < datasGoogle.length - 1){
       setRefTabIndex(refTabIndex + 1);
+      const newIndex = refCardIndex + 1;
+      setRefCardIndex(newIndex);
+      setSelectedLevelGraph([newIndex])
     }
   }
 
   const prevContentTab = () => {
-    if(refTabIndex > -1){
+    if(refTabIndex > 0){
       setRefTabIndex(refTabIndex - 1);
+      const newIndex = refCardIndex - 1;
+      setRefCardIndex(newIndex);
+      setSelectedLevelGraph([newIndex])
     }
   }
 
@@ -110,14 +79,16 @@ const LeftSection = (props: tabChooseUser) => {
       const newIndex = refCardIndex - 1
       setRefCardIndex(newIndex);
       setSelectedLevelGraph([newIndex])
+      setRefTabIndex(refTabIndex - 1);
     }
   }
 
   const nextContentCard = () => {
-    if(refCardIndex < propsArray.length - 1){
-      const newIndex = refCardIndex - 1
+    if(refCardIndex < datasGoogle.length - 1){
+      const newIndex = refCardIndex + 1;
       setRefCardIndex(newIndex);
       setSelectedLevelGraph([newIndex])
+      setRefTabIndex(refTabIndex + 1);
     }
   }
 
@@ -132,7 +103,7 @@ const LeftSection = (props: tabChooseUser) => {
   return (
     <View style={[styles.leftcontainer, { justifyContent: 'center' }]}>
       { 
-        !datasGoogle.length ?
+        !datasGoogle?.length ?
           <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
           </View>

@@ -47,7 +47,7 @@ const MultiLineMap = (props: propsLineMap) => {
     }
 
     const asyncFetch = () => {
-        console.log(month)
+        // console.log(month)
         if(month.length){
             const output = parseDatas(month)
             setData(output)

@@ -16,12 +16,10 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const HomeScreen = ({ route, navigation } : any) => {
-  // const { name, email } = route.params;
-  const name = "Yba"
-  const email = "qdqqs"
-  let props_datas: any = []
-  let props_array_datas: any = []
-  const [datasGoogle, setDatasGoogle] = useState(props_datas);
+  const { name, email } = route.params;
+  // const name = "Yba"
+  // const email = "qdqqs"
+  const [datasGoogle, setDatasGoogle] = useState([]);
   const [tabUserActive, setTabUserActive] = useState(0);
   const [number_user, setNumber_user] = useState(0);
   const [steps , setSteps] = useState(0);
@@ -33,11 +31,26 @@ const HomeScreen = ({ route, navigation } : any) => {
 
 
   useEffect(() => {
-    setNumber_user(datasGoogle.length);
+    setNumber_user(datasGoogle ? datasGoogle.length : 0);
     let steps = 0;
-    let count_steps = 1;
+    let count_steps = 0;
 
-    
+    datasGoogle?.map((data: any) => {
+      const months = data.month_datas;
+      months.map((month: any) => {
+        for (const key in month.startTimeMillis) {
+          steps += month['dataset.point.value.intVal'][key]
+          count_steps += 1
+        }
+      })
+    })
+
+    if(count_steps === 0){
+      setSteps(0)
+    }
+    else {
+      setSteps(parseInt(steps/count_steps))
+    }
   }, [datasGoogle])
 
   return (

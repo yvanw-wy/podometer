@@ -14,7 +14,10 @@ import { CheckCircleFilled, LoadingOutlined } from '@ant-design/icons';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const SaveGoogle = () => {
+const SaveGoogle = ({ route, navigation } : any) => {
+    const { id } = route.params;
+    // const id = 5;
+    // console.log(id);
     const [message, setMessage] = useState("Authentication en cours...")
 
     const [request, fullResult, promptAsync] = Google.useAuthRequest({
@@ -64,11 +67,13 @@ const SaveGoogle = () => {
             url: 'googlefit/registeruser',
             datas: {
               token: token,
-              refreshToken: refreshToken
+              refreshToken: refreshToken,
+              idDoctor: id
             }
           })
           if(saveUser[0].success){
             setMessage("Enregistrement réussi ! Vous pouvez fermer cette page !")
+            // Here we must save that user in the db, with the doctor ID associated
             setTimeout(() => {
             }, 2000)
           }
